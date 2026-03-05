@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel Admin — Tentación Saludable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Jost',sans-serif; background:#F4F8F2; color:#1A2E10; }
+
+/* ── LOGIN SCREEN ── */
+#loginScreen {
+  min-height: 100vh;
+  background: linear-gradient(145deg, #1a3a08 0%, #2D5016 60%, #1e4010 100%);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  position: relative; overflow: hidden;
+}
+#loginScreen::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 80% 20%, rgba(168,201,144,0.12) 0%, transparent 55%),
+              radial-gradient(ellipse at 10% 80%, rgba(94,153,64,0.15) 0%, transparent 50%);
+}
+.login-card {
+  background: white; border-radius: 20px; padding: 44px 40px;
+  width: 100%; max-width: 380px; position: relative; z-index: 1;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.28);
+  animation: cardIn 0.4s cubic-bezier(0.34,1.2,0.64,1);
+}
+@keyframes cardIn { from { opacity:0; transform: translateY(20px) scale(0.97); } to { opacity:1; transform: translateY(0) scale(1); } }
+.login-logo { text-align: center; margin-bottom: 32px; }
+.login-logo-circle {
+  width: 64px; height: 64px; background: linear-gradient(135deg, #2D5016, #5E9940);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 14px; font-size: 1.5rem;
+}
+.login-logo-main { font-family:'Playfair Display',serif; font-size: 1.3rem; color: #1A2E10; line-height: 1.2; }
+.login-logo-sub { font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: #7FAF60; margin-top: 4px; }
+.login-label { display: block; font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: #4A6B35; font-weight: 600; margin-bottom: 7px; }
+.login-input {
+  width: 100%; background: #F4F8F2; border: 1.5px solid #C8DBBE; border-radius: 10px;
+  padding: 12px 14px; font-family:'Jost',sans-serif; font-size: 0.9rem; color: #1A2E10;
+  outline: none; transition: border-color 0.15s; margin-bottom: 16px;
+}
+.login-input:focus { border-color: #2D5016; background: white; }
+.login-btn {
+  width: 100%; background: #2D5016; color: white; border: none; border-radius: 12px;
+  padding: 14px; font-family:'Jost',sans-serif; font-size: 0.9rem; font-weight: 500;
+  cursor: pointer; letter-spacing: 0.04em; transition: background 0.15s, transform 0.1s; margin-top: 4px;
+}
+.login-btn:hover { background: #3A6B1F; transform: translateY(-1px); }
+.login-error {
+  background: #fde8e8; color: #c0392b; border-radius: 8px;
+  padding: 10px 14px; font-size: 0.8rem; margin-bottom: 14px;
+  display: none; text-align: center;
+}
+.login-error.show { display: block; }
+.back-to-store {
+  display: block; text-align: center; margin-top: 20px;
+  font-size: 0.76rem; color: #8AAE70; text-decoration: none;
+  transition: color 0.15s;
+}
+.back-to-store:hover { color: #3A6B1F; }
+
+/* ── ADMIN PANEL ── */
+#adminPanel { display: none; min-height: 100vh; }
+#adminPanel.active { display: flex; }
+
+.sidebar {
+  width: 220px; background: #2D5016; color: white;
+  display: flex; flex-direction: column;
+  position: fixed; top:0; left:0; bottom:0; z-index:50;
+}
+.sidebar-logo { padding: 24px 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-logo-main { font-family:'Playfair Display',serif; font-size: 1rem; color: white; line-height: 1.2; }
+.sidebar-logo-sub { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: #7FAF60; margin-top: 3px; }
+.sidebar-badge { display: inline-block; background: rgba(255,255,255,0.12); font-size: 0.58rem; letter-spacing: 0.15em; text-transform: uppercase; padding: 2px 8px; border-radius: 10px; color: rgba(255,255,255,0.7); margin-top: 8px; }
+.sidebar nav { flex: 1; padding: 16px 0; }
+.nav-section { font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.35); padding: 12px 20px 6px; }
+.nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 20px; cursor: pointer; font-size: 0.82rem; color: rgba(255,255,255,0.7); transition: all 0.15s; border-left: 3px solid transparent; }
+.nav-item:hover { background: rgba(255,255,255,0.07); color: white; }
+.nav-item.active { background: rgba(255,255,255,0.1); color: white; border-left-color: #7FAF60; }
+.nav-item svg { opacity: 0.7; flex-shrink: 0; }
+.nav-item.active svg { opacity: 1; }
+.nav-badge { margin-left: auto; background: #e74c3c; color: white; font-size: 0.6rem; font-weight: 600; padding: 1px 6px; border-radius: 10px; }
+.sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+.logout-btn { background: rgba(255,255,255,0.1); border: none; color: rgba(255,255,255,0.7); width: 100%; padding: 8px; border-radius: 8px; font-family:'Jost',sans-serif; font-size: 0.75rem; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.logout-btn:hover { background: rgba(255,255,255,0.18); color: white; }
+
+.main { margin-left: 220px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+.topbar { background: white; border-bottom: 1px solid #C8DBBE; padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 40; }
+.topbar-title { font-family:'Playfair Display',serif; font-size: 1.1rem; color: #2D5016; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-store-btn { display: flex; align-items: center; gap: 6px; background: #DDE8DB; color: #2D5016; border: none; border-radius: 8px; padding: 7px 14px; font-family:'Jost',sans-serif; font-size: 0.75rem; font-weight: 500; cursor: pointer; transition: background 0.15s; text-decoration: none; }
+.topbar-store-btn:hover { background: #C8DBBE; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: #2D5016; color: white; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; }
+.content { padding: 28px; flex: 1; }
+
+.page { display: none; }
+.page.active { display: block; }
+
+/* stats */
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 28px; }
+.stat-card { background: white; border-radius: 12px; padding: 18px 20px; border: 1px solid #C8DBBE; }
+.stat-label { font-size: 0.68rem; letter-spacing: 0.12em; text-transform: uppercase; color: #8AAE70; margin-bottom: 8px; }
+.stat-val { font-family:'Playfair Display',serif; font-size: 1.6rem; color: #2D5016; }
+.stat-sub { font-size: 0.72rem; color: #8AAE70; margin-top: 4px; }
+.stat-sub.up { color: #5E9940; }
+.stat-sub.warn { color: #d35400; }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.panel-card { background: white; border-radius: 12px; border: 1px solid #C8DBBE; overflow: hidden; }
+.panel-card-header { padding: 16px 20px; border-bottom: 1px solid #C8DBBE; display: flex; align-items: center; justify-content: space-between; }
+.panel-card-title { font-size: 0.8rem; font-weight: 600; }
+.panel-card-action { font-size: 0.72rem; color: #5E9940; cursor: pointer; }
+.order-row { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid #DDE8DB; cursor: pointer; transition: background 0.12s; }
+.order-row:last-child { border: none; }
+.order-row:hover { background: #F4F8F2; }
+.order-num { font-size: 0.75rem; font-weight: 600; color: #2D5016; min-width: 44px; }
+.order-info { flex: 1; }
+.order-name { font-size: 0.82rem; font-weight: 500; }
+.order-items { font-size: 0.7rem; color: #8AAE70; margin-top: 1px; }
+.order-total { font-size: 0.82rem; font-weight: 600; color: #2D5016; }
+.status-pill { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 9px; border-radius: 10px; white-space: nowrap; }
+.sp-pendiente { background: #fef3cd; color: #856404; }
+.sp-preparacion { background: #cce5ff; color: #004085; }
+.sp-enviado { background: #d4edda; color: #155724; }
+.sp-entregado { background: #d1ecf1; color: #0c5460; }
+.stock-row { display: flex; align-items: center; gap: 10px; padding: 10px 20px; border-bottom: 1px solid #DDE8DB; font-size: 0.8rem; }
+.stock-row:last-child { border: none; }
+.stock-name { flex: 1; }
+.stock-qty { font-weight: 600; min-width: 36px; text-align: right; }
+.stock-qty.low { color: #c0392b; }
+.stock-qty.ok { color: #5E9940; }
+.stock-bar-wrap { width: 60px; height: 4px; background: #DDE8DB; border-radius: 2px; }
+.stock-bar { height: 100%; border-radius: 2px; }
+.stock-bar.low { background: #c0392b; }
+.stock-bar.ok { background: #5E9940; }
+
+/* products table */
+.page-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.search-box { flex:1; max-width:300px; display:flex; align-items:center; gap:8px; background:white; border:1px solid #C8DBBE; border-radius:8px; padding:8px 12px; }
+.search-box input { border:none; outline:none; font-family:'Jost',sans-serif; font-size:0.82rem; color:#1A2E10; background:transparent; flex:1; }
+.filter-select { background:white; border:1px solid #C8DBBE; border-radius:8px; padding:8px 12px; font-family:'Jost',sans-serif; font-size:0.8rem; color:#1A2E10; outline:none; cursor:pointer; }
+
+.products-table { background:white; border-radius:12px; border:1px solid #C8DBBE; overflow:hidden; }
+.table-head { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr 80px; background:#DDE8DB; }
+.th { padding:10px 16px; font-size:0.65rem; letter-spacing:0.12em; text-transform:uppercase; color:#4A6B35; font-weight:600; }
+.product-row { display:grid; grid-template-columns:2fr 1fr 1fr 1fr 1fr 80px; align-items:center; border-bottom:1px solid #DDE8DB; transition:background 0.12s; cursor:pointer; }
+.product-row:last-child { border:none; }
+.product-row:hover { background:#F4F8F2; }
+.td { padding:12px 16px; font-size:0.82rem; }
+.prod-name-cell { display:flex; align-items:center; gap:10px; }
+.prod-icon { width:34px; height:34px; background:#DDE8DB; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+.prod-name { font-weight:500; line-height:1.2; }
+.prod-cat { font-size:0.68rem; color:#8AAE70; }
+.price-cell { font-weight:600; color:#2D5016; }
+.toggle-switch { position:relative; width:36px; height:20px; }
+.toggle-switch input { opacity:0; width:0; height:0; }
+.toggle-track { position:absolute; inset:0; background:#C8DBBE; border-radius:10px; cursor:pointer; transition:background 0.2s; }
+.toggle-track::after { content:''; position:absolute; left:3px; top:3px; width:14px; height:14px; background:white; border-radius:50%; transition:transform 0.2s; }
+input:checked + .toggle-track { background:#5E9940; }
+input:checked + .toggle-track::after { transform:translateX(16px); }
+.edit-btn { background:none; border:1px solid #C8DBBE; border-radius:6px; padding:5px 10px; font-family:'Jost',sans-serif; font-size:0.72rem; color:#4A6B35; cursor:pointer; transition:all 0.12s; }
+.edit-btn:hover { border-color:#2D5016; color:#2D5016; background:#DDE8DB; }
+
+/* orders */
+.orders-list { background:white; border-radius:12px; border:1px solid #C8DBBE; overflow:hidden; }
+.order-detail-row { display:grid; grid-template-columns:60px 1fr 1fr 120px 140px 100px; align-items:center; padding:14px 20px; border-bottom:1px solid #DDE8DB; font-size:0.82rem; cursor:pointer; transition:background 0.12s; }
+.order-detail-row:hover { background:#F4F8F2; }
+.order-detail-row:last-child { border:none; }
+.order-detail-row.head { background:#DDE8DB; font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:#4A6B35; font-weight:600; cursor:default; }
+.order-detail-row.head:hover { background:#DDE8DB; }
+.status-select { background:transparent; border:none; font-family:'Jost',sans-serif; font-size:0.75rem; font-weight:600; cursor:pointer; outline:none; padding:4px 8px; border-radius:8px; }
+
+/* stock */
+.stock-table { background:white; border-radius:12px; border:1px solid #C8DBBE; overflow:hidden; }
+.stock-detail-row { display:grid; grid-template-columns:2fr 80px 110px 120px 1fr; align-items:center; padding:12px 20px; border-bottom:1px solid #DDE8DB; font-size:0.82rem; }
+.stock-detail-row:last-child { border:none; }
+.stock-detail-row.head { background:#DDE8DB; font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:#4A6B35; font-weight:600; }
+.stock-input { width:70px; background:#F4F8F2; border:1px solid #C8DBBE; border-radius:6px; padding:6px 8px; font-family:'Jost',sans-serif; font-size:0.82rem; text-align:center; outline:none; }
+.stock-input:focus { border-color:#2D5016; }
+.btn-add-stock { background:#DDE8DB; color:#2D5016; border:none; border-radius:6px; padding:6px 12px; font-family:'Jost',sans-serif; font-size:0.75rem; font-weight:500; cursor:pointer; transition:background 0.12s; }
+.btn-add-stock:hover { background:#C8DBBE; }
+
+/* edit price modal */
+.edit-overlay { position:fixed; inset:0; background:rgba(26,46,16,0.5); z-index:200; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.2s; backdrop-filter:blur(3px); }
+.edit-overlay.open { opacity:1; pointer-events:all; }
+.edit-modal { background:white; border-radius:16px; width:460px; max-width:95vw; padding:28px; transform:scale(0.96); transition:transform 0.25s cubic-bezier(0.34,1.2,0.64,1); max-height:90vh; overflow-y:auto; }
+.edit-overlay.open .edit-modal { transform:scale(1); }
+.edit-modal-header { display:flex; align-items:center; gap:12px; margin-bottom:24px; }
+.edit-modal-icon { width:46px; height:46px; background:#DDE8DB; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0; }
+.edit-modal-title { font-family:'Playfair Display',serif; font-size:1.2rem; color:#2D5016; line-height:1.2; }
+.edit-modal-cat { font-size:0.68rem; color:#8AAE70; margin-top:2px; }
+.edit-close { margin-left:auto; background:none; border:none; cursor:pointer; color:#8AAE70; font-size:1.1rem; padding:4px; }
+.edit-close:hover { color:#1A2E10; }
+.edit-section-label { font-size:0.65rem; letter-spacing:0.15em; text-transform:uppercase; color:#8AAE70; font-weight:600; margin-bottom:12px; }
+.variants-edit { display:flex; flex-direction:column; gap:10px; margin-bottom:24px; }
+.variant-edit-row { display:flex; align-items:center; gap:12px; background:#F4F8F2; border:1px solid #C8DBBE; border-radius:10px; padding:12px 14px; transition:border-color 0.15s; }
+.variant-edit-row:focus-within { border-color:#3A6B1F; }
+.variant-size-label { font-size:0.8rem; font-weight:600; min-width:44px; color:#1A2E10; }
+.variant-price-input { flex:1; background:white; border:1.5px solid #C8DBBE; border-radius:8px; padding:9px 12px; font-family:'Jost',sans-serif; font-size:0.9rem; font-weight:600; color:#2D5016; outline:none; transition:border-color 0.15s; text-align:right; }
+.variant-price-input:focus { border-color:#3A6B1F; }
+.peso-label { font-size:0.75rem; color:#8AAE70; }
+.edit-toggle-row { display:flex; align-items:center; justify-content:space-between; background:#F4F8F2; border-radius:10px; padding:14px; margin-bottom:24px; }
+.edit-toggle-label { font-size:0.82rem; font-weight:500; color:#1A2E10; }
+.edit-toggle-sub { font-size:0.7rem; color:#8AAE70; margin-top:2px; }
+.edit-actions { display:flex; gap:10px; }
+.btn-save { flex:1; background:#2D5016; color:white; border:none; border-radius:10px; padding:13px; font-family:'Jost',sans-serif; font-size:0.85rem; font-weight:500; cursor:pointer; transition:background 0.15s; }
+.btn-save:hover { background:#3A6B1F; }
+.btn-cancel { background:#F4F8F2; color:#4A6B35; border:1px solid #C8DBBE; border-radius:10px; padding:13px 20px; font-family:'Jost',sans-serif; font-size:0.85rem; cursor:pointer; transition:background 0.15s; }
+.btn-cancel:hover { background:#C8DBBE; }
+
+/* toast */
+.toast { position:fixed; bottom:24px; right:24px; background:#2D5016; color:white; padding:12px 20px; border-radius:10px; font-size:0.82rem; font-weight:500; z-index:9999; transform:translateY(60px); opacity:0; transition:all 0.3s cubic-bezier(0.34,1.2,0.64,1); box-shadow:0 6px 20px rgba(0,0,0,0.15); }
+.toast.show { transform:translateY(0); opacity:1; }
+
+@media (max-width:768px) {
+  .sidebar { width:60px; }
+  .sidebar-logo, .nav-section, .nav-item span, .sidebar-footer { display:none; }
+  .main { margin-left:60px; }
+  .stats-grid { grid-template-columns:repeat(2,1fr); }
+  .two-col { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-circle">🌿</div>
+      <div class="login-logo-main">Tentación Saludable</div>
+      <div class="login-logo-sub">Panel de administración</div>
+    </div>
+    <div class="login-error" id="loginError">Usuario o contraseña incorrectos</div>
+    <label class="login-label">Usuario</label>
+    <input class="login-input" id="loginUser" type="text" placeholder="Tu nombre de usuario" autocomplete="username">
+    <label class="login-label">Contraseña</label>
+    <input class="login-input" id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Ingresar al panel</button>
+    <a href="index.html" class="back-to-store">← Volver a la tienda</a>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminPanel">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-main">Tentación<br>Saludable</div>
+      <div class="sidebar-logo-sub">Dietética</div>
+      <div class="sidebar-badge">Panel Admin</div>
+    </div>
+    <nav>
+      <div class="nav-section">Principal</div>
+      <div class="nav-item active" onclick="showPage('dashboard',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span>Inicio</span>
+      </div>
+      <div class="nav-item" onclick="showPage('orders',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg>
+        <span>Pedidos</span>
+        <span class="nav-badge">3</span>
+      </div>
+      <div class="nav-section">Catálogo</div>
+      <div class="nav-item" onclick="showPage('products',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        <span>Productos</span>
+      </div>
+      <div class="nav-item" onclick="showPage('stock',this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+        <span>Stock</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="doLogout()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span>Cerrar sesión</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbarTitle">Inicio</div>
+      <div class="topbar-right">
+        <a href="index.html" class="topbar-store-btn" target="_blank">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Ver tienda
+        </a>
+        <div class="avatar" id="userAvatar">AG</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Pedidos hoy</div><div class="stat-val">7</div><div class="stat-sub up">↑ 3 más que ayer</div></div>
+          <div class="stat-card"><div class="stat-label">Facturado hoy</div><div class="stat-val">$84.200</div><div class="stat-sub up">↑ buen día</div></div>
+          <div class="stat-card"><div class="stat-label">Pendientes</div><div class="stat-val">3</div><div class="stat-sub warn">Requieren atención</div></div>
+          <div class="stat-card"><div class="stat-label">Stock bajo</div><div class="stat-val">4</div><div class="stat-sub warn">Productos a reponer</div></div>
+        </div>
+        <div class="two-col">
+          <div class="panel-card">
+            <div class="panel-card-header"><span class="panel-card-title">Pedidos recientes</span><span class="panel-card-action" onclick="showPage('orders',document.querySelectorAll('.nav-item')[1])">Ver todos →</span></div>
+            <div class="order-row"><div class="order-num">#024</div><div class="order-info"><div class="order-name">María Gonzalez</div><div class="order-items">Chía 500g · Almendras 250g · Avena 1kg</div></div><div class="order-total">$18.500</div><span class="status-pill sp-pendiente">Pendiente</span></div>
+            <div class="order-row"><div class="order-num">#023</div><div class="order-info"><div class="order-name">Lucas Pérez</div><div class="order-items">Mix Europeo 500g · Pistachos 100g</div></div><div class="order-total">$20.000</div><span class="status-pill sp-preparacion">Preparación</span></div>
+            <div class="order-row"><div class="order-num">#022</div><div class="order-info"><div class="order-name">Ana Rodríguez</div><div class="order-items">Granola 250g · Chía 250g</div></div><div class="order-total">$6.900</div><span class="status-pill sp-enviado">Enviado</span></div>
+            <div class="order-row"><div class="order-num">#021</div><div class="order-info"><div class="order-name">Carolina Sosa</div><div class="order-items">Eritritol 500g · Harina Almendra 500g</div></div><div class="order-total">$16.900</div><span class="status-pill sp-entregado">Entregado</span></div>
+          </div>
+          <div class="panel-card">
+            <div class="panel-card-header"><span class="panel-card-title">Stock bajo</span><span class="panel-card-action" onclick="showPage('stock',document.querySelectorAll('.nav-item')[3])">Cargar stock →</span></div>
+            <div class="stock-row"><span class="stock-name">Pistachos 100g</span><div class="stock-bar-wrap"><div class="stock-bar low" style="width:15%"></div></div><span class="stock-qty low">2 u</span></div>
+            <div class="stock-row"><span class="stock-name">Almendras 500g</span><div class="stock-bar-wrap"><div class="stock-bar low" style="width:20%"></div></div><span class="stock-qty low">3 u</span></div>
+            <div class="stock-row"><span class="stock-name">Eritritol 1kg</span><div class="stock-bar-wrap"><div class="stock-bar low" style="width:25%"></div></div><span class="stock-qty low">4 u</span></div>
+            <div class="stock-row"><span class="stock-name">Chía 1kg</span><div class="stock-bar-wrap"><div class="stock-bar ok" style="width:55%"></div></div><span class="stock-qty ok">8 u</span></div>
+            <div class="stock-row"><span class="stock-name">Harina Almendra 500g</span><div class="stock-bar-wrap"><div class="stock-bar ok" style="width:70%"></div></div><span class="stock-qty ok">12 u</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS -->
+      <div class="page" id="page-products">
+        <div class="page-toolbar">
+          <div class="search-box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8AAE70" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" placeholder="Buscar producto..."></div>
+          <select class="filter-select"><option>Todas las categorías</option><option>Frutos Secos</option><option>Semillas</option><option>Harinas</option><option>Cereales y Granolas</option><option>Fraccionados</option></select>
+        </div>
+        <div class="products-table">
+          <div class="table-head"><div class="th">Producto</div><div class="th">Categoría</div><div class="th">Desde</div><div class="th">Hasta</div><div class="th">Activo</div><div class="th"></div></div>
+          <div id="productsBody"></div>
+        </div>
+      </div>
+
+      <!-- ORDERS -->
+      <div class="page" id="page-orders">
+        <div class="page-toolbar">
+          <div class="search-box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8AAE70" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" placeholder="Buscar pedido..."></div>
+          <select class="filter-select"><option>Todos los estados</option><option>Pendiente</option><option>Preparación</option><option>Enviado</option><option>Entregado</option></select>
+        </div>
+        <div class="orders-list">
+          <div class="order-detail-row head"><div>#</div><div>Cliente</div><div>Productos</div><div>Total</div><div>Estado</div><div>Fecha</div></div>
+          <div class="order-detail-row"><div style="font-weight:600;color:#2D5016">#024</div><div><div style="font-weight:500">María Gonzalez</div><div style="font-size:0.7rem;color:#8AAE70">341 555-1234</div></div><div style="font-size:0.75rem;color:#4A6B35">Chía 500g · Almendras 250g · Avena 1kg</div><div style="font-weight:600;color:#2D5016">$18.500</div><div><select class="status-select sp-pendiente" onchange="this.className='status-select sp-'+this.value"><option value="pendiente">Pendiente</option><option value="preparacion">Preparación</option><option value="enviado">Enviado</option><option value="entregado">Entregado</option></select></div><div style="font-size:0.75rem;color:#8AAE70">hoy 10:34</div></div>
+          <div class="order-detail-row"><div style="font-weight:600;color:#2D5016">#023</div><div><div style="font-weight:500">Lucas Pérez</div><div style="font-size:0.7rem;color:#8AAE70">341 555-5678</div></div><div style="font-size:0.75rem;color:#4A6B35">Mix Europeo 500g · Pistachos 100g</div><div style="font-weight:600;color:#2D5016">$20.000</div><div><select class="status-select sp-preparacion" onchange="this.className='status-select sp-'+this.value"><option value="pendiente">Pendiente</option><option value="preparacion" selected>Preparación</option><option value="enviado">Enviado</option><option value="entregado">Entregado</option></select></div><div style="font-size:0.75rem;color:#8AAE70">hoy 09:12</div></div>
+          <div class="order-detail-row"><div style="font-weight:600;color:#2D5016">#022</div><div><div style="font-weight:500">Ana Rodríguez</div><div style="font-size:0.7rem;color:#8AAE70">341 555-9012</div></div><div style="font-size:0.75rem;color:#4A6B35">Granola 250g · Chía 250g</div><div style="font-weight:600;color:#2D5016">$6.900</div><div><select class="status-select sp-enviado" onchange="this.className='status-select sp-'+this.value"><option value="pendiente">Pendiente</option><option value="preparacion">Preparación</option><option value="enviado" selected>Enviado</option><option value="entregado">Entregado</option></select></div><div style="font-size:0.75rem;color:#8AAE70">ayer 16:50</div></div>
+          <div class="order-detail-row"><div style="font-weight:600;color:#2D5016">#021</div><div><div style="font-weight:500">Carolina Sosa</div><div style="font-size:0.7rem;color:#8AAE70">341 555-3456</div></div><div style="font-size:0.75rem;color:#4A6B35">Eritritol 500g · Harina Almendra 500g</div><div style="font-weight:600;color:#2D5016">$16.900</div><div><select class="status-select sp-entregado" onchange="this.className='status-select sp-'+this.value"><option value="pendiente">Pendiente</option><option value="preparacion">Preparación</option><option value="enviado">Enviado</option><option value="entregado" selected>Entregado</option></select></div><div style="font-size:0.75rem;color:#8AAE70">ayer 11:20</div></div>
+        </div>
+      </div>
+
+      <!-- STOCK -->
+      <div class="page" id="page-stock">
+        <div class="page-toolbar">
+          <div class="search-box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8AAE70" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input type="text" placeholder="Buscar producto..."></div>
+        </div>
+        <div class="stock-table">
+          <div class="stock-detail-row head"><div>Producto / Presentación</div><div>Stock actual</div><div>Agregar unidades</div><div></div><div>Última entrada</div></div>
+          <div class="stock-detail-row"><div><div style="font-weight:500">Almendras Guara</div><div style="font-size:0.7rem;color:#8AAE70">500g</div></div><div style="font-weight:600;color:#c0392b">3</div><div><input class="stock-input" type="number" value="0" min="0"></div><div><button class="btn-add-stock" onclick="showToast('✅ Stock actualizado')">Cargar</button></div><div style="font-size:0.72rem;color:#8AAE70">hace 5 días</div></div>
+          <div class="stock-detail-row"><div><div style="font-weight:500">Chía</div><div style="font-size:0.7rem;color:#8AAE70">1kg</div></div><div style="font-weight:600;color:#c0392b">8</div><div><input class="stock-input" type="number" value="0" min="0"></div><div><button class="btn-add-stock" onclick="showToast('✅ Stock actualizado')">Cargar</button></div><div style="font-size:0.72rem;color:#8AAE70">hace 3 días</div></div>
+          <div class="stock-detail-row"><div><div style="font-weight:500">Pistachos</div><div style="font-size:0.7rem;color:#8AAE70">100g</div></div><div style="font-weight:600;color:#c0392b">2</div><div><input class="stock-input" type="number" value="0" min="0"></div><div><button class="btn-add-stock" onclick="showToast('✅ Stock actualizado')">Cargar</button></div><div style="font-size:0.72rem;color:#8AAE70">hace 7 días</div></div>
+          <div class="stock-detail-row"><div><div style="font-weight:500">Eritritol</div><div style="font-size:0.7rem;color:#8AAE70">1kg</div></div><div style="font-weight:600;color:#c0392b">4</div><div><input class="stock-input" type="number" value="0" min="0"></div><div><button class="btn-add-stock" onclick="showToast('✅ Stock actualizado')">Cargar</button></div><div style="font-size:0.72rem;color:#8AAE70">hace 4 días</div></div>
+          <div class="stock-detail-row"><div><div style="font-weight:500">Granola Mandala</div><div style="font-size:0.7rem;color:#8AAE70">250g</div></div><div style="font-weight:600;color:#5E9940">22</div><div><input class="stock-input" type="number" value="0" min="0"></div><div><button class="btn-add-stock" onclick="showToast('✅ Stock actualizado')">Cargar</button></div><div style="font-size:0.72rem;color:#8AAE70">hoy</div></div>
+          <div class="stock-detail-row"><div><div style="font-weight:500">Harina de Almendra</div><div style="font-size:0.7rem;color:#8AAE70">500g</div></div><div style="font-weight:600;color:#5E9940">12</div><div><input class="stock-input" type="number" value="0" min="0"></div><div><button class="btn-add-stock" onclick="showToast('✅ Stock actualizado')">Cargar</button></div><div style="font-size:0.72rem;color:#8AAE70">hace 2 días</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="edit-overlay" id="editOverlay" onclick="if(event.target===this)closeEdit()">
+  <div class="edit-modal">
+    <div class="edit-modal-header">
+      <div class="edit-modal-icon" id="editIcon"></div>
+      <div><div class="edit-modal-title" id="editName"></div><div class="edit-modal-cat" id="editCat"></div></div>
+      <button class="edit-close" onclick="closeEdit()">✕</button>
+    </div>
+    <div class="edit-section-label">Precios por presentación</div>
+    <div class="variants-edit" id="variantsEdit"></div>
+    <div class="edit-toggle-row">
+      <div><div class="edit-toggle-label">Producto activo</div><div class="edit-toggle-sub">Visible en la tienda</div></div>
+      <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-track"></span></label>
+    </div>
+    <div class="edit-actions">
+      <button class="btn-cancel" onclick="closeEdit()">Cancelar</button>
+      <button class="btn-save" onclick="saveProduct()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── AUTH ──────────────────────────────────────────
+function doLogin() {
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value;
+  if (u.toLowerCase() === 'agustina' && p === '123') {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminPanel').classList.add('active');
+    document.getElementById('loginError').classList.remove('show');
+  } else {
+    document.getElementById('loginError').classList.add('show');
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginPass').focus();
+  }
+}
+
+function doLogout() {
+  document.getElementById('adminPanel').classList.remove('active');
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+// ── PRODUCTS ──────────────────────────────────────
+const products = [
+  {icon:'🥜',name:'Almendras Guara',cat:'Frutos Secos',active:true,variants:[{size:'100g',price:2700},{size:'250g',price:6600},{size:'500g',price:12500},{size:'1kg',price:23500}]},
+  {icon:'🌰',name:'Castañas de Cajú W4',cat:'Frutos Secos',active:true,variants:[{size:'100g',price:2300},{size:'250g',price:5600},{size:'500g',price:10500},{size:'1kg',price:20000}]},
+  {icon:'💚',name:'Pistachos',cat:'Frutos Secos',active:true,variants:[{size:'100g',price:4500},{size:'250g',price:11000},{size:'500g',price:22000},{size:'1kg',price:42000}]},
+  {icon:'🌱',name:'Chía',cat:'Semillas',active:true,variants:[{size:'100g',price:1000},{size:'250g',price:2300},{size:'500g',price:4450},{size:'1kg',price:8800}]},
+  {icon:'🌿',name:'Quinoa',cat:'Semillas',active:true,variants:[{size:'100g',price:1300},{size:'250g',price:3000},{size:'500g',price:5850},{size:'1kg',price:11500}]},
+  {icon:'🌾',name:'Avena',cat:'Cereales y Granolas',active:true,variants:[{size:'250g',price:700},{size:'500g',price:1200},{size:'1kg',price:2200}]},
+  {icon:'🍫',name:'Granola con Chocolate',cat:'Cereales y Granolas',active:true,variants:[{size:'100g',price:1900},{size:'250g',price:4600},{size:'500g',price:9000},{size:'1kg',price:17500}]},
+  {icon:'⚪',name:'Harina de Almendra',cat:'Harinas',active:true,variants:[{size:'500g',price:3200},{size:'1kg',price:6200}]},
+  {icon:'🥥',name:'Harina de Coco',cat:'Harinas',active:false,variants:[{size:'500g',price:4500},{size:'1kg',price:8800}]},
+  {icon:'🍬',name:'Eritritol',cat:'Azúcares',active:true,variants:[{size:'100g',price:2900},{size:'250g',price:7000},{size:'500g',price:13700},{size:'1kg',price:26900}]},
+  {icon:'🍫',name:'Cacao en Polvo',cat:'Fraccionados',active:true,variants:[{size:'100g',price:2300},{size:'250g',price:5600},{size:'500g',price:11000},{size:'1kg',price:21500}]},
+  {icon:'🥥',name:'Coco Rallado',cat:'Fraccionados',active:true,variants:[{size:'100g',price:1200},{size:'250g',price:2800},{size:'500g',price:5500},{size:'1kg',price:10800}]},
+];
+
+const fmt = p => '$' + Number(p).toLocaleString('es-AR');
+
+function renderProducts() {
+  document.getElementById('productsBody').innerHTML = products.map((p,i) => `
+    <div class="product-row" onclick="openEdit(${i})">
+      <div class="td"><div class="prod-name-cell"><div class="prod-icon">${p.icon}</div><div><div class="prod-name">${p.name}</div><div class="prod-cat">${p.variants.length} presentaciones</div></div></div></div>
+      <div class="td" style="color:#4A6B35;font-size:0.78rem">${p.cat}</div>
+      <div class="td price-cell">${fmt(Math.min(...p.variants.map(v=>v.price)))}</div>
+      <div class="td price-cell">${fmt(Math.max(...p.variants.map(v=>v.price)))}</div>
+      <div class="td" onclick="event.stopPropagation()"><label class="toggle-switch"><input type="checkbox" ${p.active?'checked':''} onchange="products[${i}].active=this.checked"><span class="toggle-track"></span></label></div>
+      <div class="td"><button class="edit-btn" onclick="event.stopPropagation();openEdit(${i})">Editar</button></div>
+    </div>`).join('');
+}
+
+let editIdx = null;
+function openEdit(idx) {
+  editIdx = idx;
+  const p = products[idx];
+  document.getElementById('editIcon').textContent = p.icon;
+  document.getElementById('editName').textContent = p.name;
+  document.getElementById('editCat').textContent = p.cat;
+  document.getElementById('variantsEdit').innerHTML = p.variants.map((v,i) => `
+    <div class="variant-edit-row">
+      <span class="variant-size-label">${v.size}</span>
+      <span class="peso-label">$</span>
+      <input class="variant-price-input" type="number" value="${v.price}" id="vp_${i}" min="0">
+    </div>`).join('');
+  document.getElementById('editOverlay').classList.add('open');
+}
+function closeEdit() { document.getElementById('editOverlay').classList.remove('open'); }
+function saveProduct() {
+  products[editIdx].variants.forEach((v,i) => {
+    const val = parseInt(document.getElementById('vp_'+i).value);
+    if (!isNaN(val) && val > 0) v.price = val;
+  });
+  renderProducts();
+  closeEdit();
+  showToast('✅ Precios guardados correctamente');
+}
+
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const titles = {dashboard:'Inicio', products:'Productos', orders:'Pedidos', stock:'Stock'};
+  document.getElementById('topbarTitle').textContent = titles[id] || id;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+renderProducts();
+</script>
+</body>
+</html>
